@@ -369,11 +369,20 @@ function compareTreeOrder(a: string, b: string): number {
     const aDir = i < as.length - 1
     const bDir = i < bs.length - 1
     if (aDir !== bDir) return aDir ? -1 : 1
-    if (as[i] !== bs[i]) return as[i]!.localeCompare(bs[i]!)
+    const aName = as[i]!
+    const bName = bs[i]!
+    if (aName === bName) continue
+    // Names compare without their extension first, so foo.ts sorts before
+    // foo.test.ts. Comparing whole names puts it after, since "test.ts" < "ts".
+    return stem(aName).localeCompare(stem(bName)) || aName.localeCompare(bName)
   }
   // Only reached when every component matched: a length mismatch would have
   // hit the dir/file check on the shorter path's last component.
   return 0
+}
+
+function stem(name: string): string {
+  return name.replace(/\.[^.]*$/, '')
 }
 
 // Tree icons: the built-in minimal set plus a check (octicon check-16) for the
